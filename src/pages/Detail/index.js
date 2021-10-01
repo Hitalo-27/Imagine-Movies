@@ -11,7 +11,8 @@ import {
     ListGenres,
     Description,
     ContainerLoading,
-    Lancamento
+    Lancamento,
+    ButtonShare
 } from './styles';
 
 import { Feather, Ionicons } from '@expo/vector-icons';
@@ -19,13 +20,12 @@ import { useNavigation, useRoute } from '@react-navigation/core';
 import api, { key } from '../../services/api';
 import Stars from 'react-native-stars';
 import Genres from '../../components/Genres';
-import { ActivityIndicator, Modal, ScrollView } from 'react-native';
+import { ActivityIndicator, Modal, ScrollView, Share } from 'react-native';
 import ModalLink from '../../components/ModalLink';
 
 import { hasMovie, saveMovie, deleteMovie } from '../../utils/storage';
 
 export default function Detail() {
-
     const navigation = useNavigation();
     const route = useRoute();
 
@@ -78,6 +78,28 @@ export default function Detail() {
             setFavoritedMovie(true);
         }
     }
+    //Compartilhamento da Descrição
+    const onShare = async () => {
+        try {
+            const result = await Share.share({
+                title: `${movie.title}`,
+                message: `*Filme:* ${movie.title} *Descrição:* ${movie?.overview}`,
+            });
+
+            if (result.action === Share.sharedAction) {
+                if (result.activityType) {
+                    // shared with activity type of result.activityType
+                } else {
+                    // shared
+                }
+            } else if (result.action === Share.dismissedAction) {
+                // dismissed
+            }
+        } catch (error) {
+            alert(error.message);
+        }
+    };
+
 
     if (loading) {
         return (
@@ -128,6 +150,12 @@ export default function Detail() {
                 <Feather name="link" size={24} color="#FFF" />
             </ButtonLink>
 
+
+            <ButtonShare activeOpacity={0.8} onPress={onShare}>
+                <Feather name="share" size={24} color="#FFF" />
+            </ButtonShare>
+
+
             <Title numberOfLines={1} >{movie.title}</Title>
 
             <ContentArea>
@@ -155,7 +183,7 @@ export default function Detail() {
             />
 
             <Lancamento> Data de Lançamento: {movie?.release_date} </Lancamento>
-            
+
             <ScrollView showsVerticalScrollIndicator={false}>
                 <Title>Descrição</Title>
                 <Description> {movie?.overview} </Description>
